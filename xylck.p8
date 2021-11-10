@@ -6,6 +6,7 @@ __lua__
 
 --common
 function _init()
+	cartdata("xylcksave")
 	music(0)
 	init()
 	_update=update_title
@@ -29,6 +30,7 @@ function init()
 		atk_cnt=max_atk_cnt,
 	}
 	score=0
+	hiscore=dget(0)
 	--attack lines
 	h_lines={}
 	v_lines={}
@@ -41,13 +43,26 @@ function init()
 	enemy_active = false
 	enemy_age = 0
 	enemy_max_age = 500
-	--field
+	--screen
 	field_y=15
+	blink_c1=8
+	blink_c2=14
+	blink_c=blink_c1
+	blink_frm=5
 end
 
 -->8
 --title
 function update_title()
+	blink_frm+=1
+	if blink_frm > 7 then
+		blink_frm=0
+		if blink_c==blink_c1 then
+			blink_c=blink_c2
+		else
+			blink_c=blink_c1
+		end
+	end
 	if btn(❎) then
 		init()
 		_update=update_gaming
@@ -57,11 +72,14 @@ end
 
 function draw_title()
 	cls(1)
-	spr(64,40,30,6,4)
-	print("press ❎ to start",30,70,6)
-	print("🅾️ lock horizontal",30,82,6)
-	print("❎ lock vertical",30,88,6)
-	print("⬅️➡️⬆️⬇️ aim",30,94,6)
+	spr(64,40,26,6,4)
+	print("press ❎ to start",30,70,blink_c)
+	--hiscore
+	print("hiscore:"..hiscore,30,82,12)
+	--control
+	print("⬅️➡️⬆️⬇️ move recticle",24,94,6)
+	print("🅾️ lock horizontal",24,100,6)
+	print("❎ lock vertical",24,106,6)
 end
 
 -->8
@@ -75,6 +93,7 @@ function update_gaming()
 	if player.atk_cnt == 0 then
 		music(-1)
 		sfx(2)
+		dset(0,score)
 		_update=update_gameover
 		_draw=draw_gameover
 	end
@@ -264,7 +283,9 @@ end
 
 function draw_gameover()
 	draw_gaming()
-	print("game over",1,8,8)
+	rectfill(30,50,97,80,6)
+	print("game over",33,51,9)
+	print("score"..score,33,57,8)
 	if gameover_time == 0 then
 		print("press 🅾️ to reset",45,8,9)
 	end
